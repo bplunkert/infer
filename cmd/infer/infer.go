@@ -34,7 +34,7 @@ func main() {
 	help := flag.Bool("help", false, "Show help information")
 	apiKey := flag.String("openai-api-key", os.Getenv("OPENAI_API_KEY"), "OpenAI API key")
 	apiUrl := flag.String("openai-api-url", "https://api.openai.com/v1", "OpenAI API URL")
-	inferfile := flag.String("f", "Inferfile", "Path to the Inferfile")
+	inferfile := flag.String("f", "Inferfile.hcl", "Path to the Inferfile")
 	parallelThreads := flag.Int("parallel-threads", 1, "Number of parallel threads to run")
 	verbose := flag.Bool("v", false, "Enable verbose output")
 	// EndInfer: command line arguments

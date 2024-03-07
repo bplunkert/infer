@@ -1,4 +1,4 @@
-file "./this/file/does/not/exist" {
+file "/this/file/does/not/exist" {
   tag "a block of code that does not exist" {
     infer { 
       assert    = "Does not contain any hard-coded credentials." 

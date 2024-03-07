@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 
-	"github.com/hashicorp/hcl/v2/gohcl"
-	"github.com/hashicorp/hcl/v2/hclparse"
-	"github.com/hashicorp/hcl/v2/hclsyntax"
+	"github.com/hashicorp/hcl/v2"
+	"github.com/hashicorp/hcl/v2/hclsimple"
 )
 
 type InferConfiguration struct {
@@ -22,61 +22,60 @@ type File struct {
 
 type Tag struct {
 	Name       string      `hcl:"name,label"`
-	Inferences []Inference `hcl:"infer,block"`
-	Code       string      `hcl:"code,optional"` // Exclude from HCL parsing, but use for internal processing
+	Inferences []Inference `hcl:"inference,block"`
+	Code       string      `hcl:"code"`
 }
 
 type Inference struct {
-	Assertion   string  `hcl:"assert"`
+	Assertion   string  `hcl:"assertion"`
 	Model       string  `hcl:"model"`
-	Count       int     `hcl:"count,optional"`
-	Threshold   float64 `hcl:"threshold,optional"`
-	MaxTokens   int     `hcl:"max_tokens,optional"`
-	Temperature float64 `hcl:"temperature,optional"`
-	Tag_Name    string
+	Count       int     `hcl:"count"`
+	Threshold   float64 `hcl:"threshold"`
+	MaxTokens   int     `hcl:"max_tokens"`
+	Temperature float64 `hcl:"temperature"`
+	Tag_Name    string  `hcl:"tag_name"`
 }
 
-func ParseInferfile(filename string) (*InferConfiguration, error) {
-	parser := hclparse.NewParser()
-	hclFile, diags := parser.ParseHCLFile(filename)
-	if diags.HasErrors() {
-		return nil, diags
-	}
-
+func ParseInferfile(path string) (*InferConfiguration, error) {
 	var config InferConfiguration
-	diags = gohcl.DecodeBody(hclFile.Body, nil, &config)
-	if diags.HasErrors() {
-		return nil, diags
+
+	// Read the Inferfile
+	src, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read Inferfile: %s", err.Error())
 	}
 
-	// Check if the files exist and note the line number of the Inferfile that pointed to that file.
-	syntaxBody, ok := hclFile.Body.(*hclsyntax.Body)
-	if !ok {
-		return nil, fmt.Errorf("file body is not hclsyntax.Body")
+	// Parse the Inferfile
+	err = hclsimple.Decode(path, src, nil, &config)
+	if err != nil {
+		// Extract the detailed error message from the hcl.Diagnostics
+		var errMsg strings.Builder
+		errMsg.WriteString("failed to parse Inferfile:\n")
+		for _, diag := range err.(hcl.Diagnostics) {
+			errMsg.WriteString(fmt.Sprintf("- %s\n", diag.Error()))
+		}
+		return nil, fmt.Errorf(errMsg.String())
 	}
-	for _, file := range config.Files {
+
+	// Get the directory of the Inferfile
+	inferfileDir := filepath.Dir(path)
+
+	// Update file paths to be relative to the Inferfile's directory
+	for i := range config.Files {
+		file := &config.Files[i]
+		if !filepath.IsAbs(file.Path) {
+			file.Path = filepath.Join(inferfileDir, file.Path)
+		}
+		// Check if the file exists
 		if _, err := os.Stat(file.Path); os.IsNotExist(err) {
-			for _, block := range syntaxBody.Blocks {
-				if block.Type == "file" && len(block.Labels) > 0 && block.Labels[0] == file.Path {
-					return nil, fmt.Errorf("file not found: %s (Inferfile line: %d)", file.Path, block.DefRange().Start.Line)
-				}
-			}
+			return nil, fmt.Errorf("file '%s' specified in Inferfile does not exist", file.Path)
 		}
-	}
-
-	// After checking for file existence, read and attach the code for each tag.
-	for i, file := range config.Files {
-		err := attachCodeToTags(&file)
-		if err != nil {
-			return nil, err
-		}
-		config.Files[i] = file
 	}
 
 	return &config, nil
 }
 
-func attachCodeToTags(file *File) error {
+func AttachCodeToTags(file *File) error {
 	// Read the entire source file content
 	source, err := ioutil.ReadFile(file.Path)
 	if err != nil {

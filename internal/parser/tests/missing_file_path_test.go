@@ -16,7 +16,7 @@ func TestParseInferfileMissingFilePath(t *testing.T) {
 		{
 			name:          "missing_file_path",
 			inferfilePath: filepath.Join("../testdata", "missing_file_path.hcl"),
-			expectedErr:   "file not found: ./this/file/does/not/exist (Inferfile line: 1)",
+			expectedErr:   "file not found: /this/file/does/not/exist (Inferfile line: 1)",
 		},
 	}
 

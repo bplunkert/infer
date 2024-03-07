@@ -24,6 +24,18 @@ func TestParseInferfileValid(t *testing.T) {
 						Tags: []parser.Tag{
 							{
 								Name: "OpenAI client",
+								Inferences: []parser.Inference{
+									{
+										Assertion:   "Does not contain any hard-coded credentials.",
+										Model:       "gpt-3.5-turbo",
+										Count:       5,
+										Threshold:   0.8,
+										MaxTokens:   0,
+										Temperature: 0,
+										Tag_Name:    "OpenAI client",
+									},
+								},
+								Code: "",
 							},
 						},
 					},
@@ -38,6 +50,15 @@ func TestParseInferfileValid(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Unexpected error: %v", err)
 			}
+
+			// Attach code to tags
+			for i := range config.Files {
+				err := parser.AttachCodeToTags(&config.Files[i])
+				if err != nil {
+					t.Fatalf("Unexpected error: %v", err)
+				}
+			}
+
 			if !reflect.DeepEqual(config, tc.expectedConfig) {
 				t.Errorf("Expected config: %+v, got: %+v", tc.expectedConfig, config)
 			}

@@ -20,7 +20,7 @@ func TestParseInferfileNoTags(t *testing.T) {
 			expectedConfig: &parser.InferConfiguration{
 				Files: []parser.File{
 					{
-						Path: "/tmp/mycode.go",
+						Path: "../testdata/no_tags.go",
 					},
 				},
 			},

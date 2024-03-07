@@ -77,7 +77,7 @@ See our very own `Inferfile` for more examples of inference tests on this codeba
 
 Build the application from source:
 ```
-go build ./cmd/infer/infer.go -o infer
+go build -o infer ./cmd/infer/infer.go
 ```
 ## Usage
 

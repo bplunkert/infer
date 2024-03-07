@@ -25,7 +25,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        go get -v -d ./...
+        go get -v go get ./cmd/infer/
 
     - name: Build
       run: |

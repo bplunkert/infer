@@ -1,5 +1,5 @@
 # Infer
-![Build](https://github.com/bplunkert/inferret/actions/workflows/build.yml/badge.svg
+![Build](https://github.com/bplunkert/infer/actions/workflows/build.yml/badge.svg
 )
 
 ## Overview

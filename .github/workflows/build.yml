@@ -27,7 +27,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        go get -v ./cmd/infer/
+        go mod tidy && go get -v ./cmd/infer/
 
     - name: Build
       run: |

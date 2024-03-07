@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"sync"
 
@@ -87,51 +88,49 @@ func runInference(apiKey, apiUrl, inferfilePath string, verbose bool, parallelTh
 	}
 
 	exec := executor.NewExecutor(client, verbose)
-	// Create a channel to collect errors
 	errChan := make(chan error, len(config.Files))
-	// Create a semaphore with a size equal to the number of parallel threads
 	semaphore := make(chan struct{}, parallelThreads)
 
-	// Use a WaitGroup to wait for all goroutines to finish
 	var wg sync.WaitGroup
 
 	for _, file := range config.Files {
+		// Read the contents of the file
+		code, err := ioutil.ReadFile(file.Path)
+		if err != nil {
+			return fmt.Errorf("failed to read file %s: %v", file.Path, err)
+		}
+
 		for _, tag := range file.Tags {
 			for _, inference := range tag.Inferences {
-				wg.Add(1) // Increment the WaitGroup counter
+				wg.Add(1)
 				go func(inference parser.Inference, code string) {
-					defer wg.Done()         // Decrement the counter when the goroutine completes
-					semaphore <- struct{}{} // Acquire a token
+					defer wg.Done()
+					semaphore <- struct{}{}
 					if verbose {
 						fmt.Printf("Inferring %s\n", inference.Assertion)
 					}
 					result, err := exec.Execute(inference, code)
-					<-semaphore // Release the token
+					<-semaphore
 					if err != nil {
-						// Send the error to the channel
 						errChan <- err
 					} else if !result {
-						// Send the failed inference to the channel
 						errChan <- fmt.Errorf("Inference failed: %s", inference.Assertion)
 					} else if verbose {
 						fmt.Printf("Inference successful: %s\n", inference.Assertion)
 					}
-				}(inference, tag.Code)
+				}(inference, string(code))
 			}
 		}
 	}
 
-	// Wait for all inferences to complete
 	wg.Wait()
-	close(errChan) // Close the channel to signal that no more errors will be sent
+	close(errChan)
 
-	// Collect all errors
 	var errors []error
 	for err := range errChan {
 		errors = append(errors, err)
 	}
 
-	// If there were any errors, return a combined error
 	if len(errors) > 0 {
 		for _, err := range errors {
 			fmt.Fprintln(os.Stderr, err)

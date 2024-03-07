@@ -47,10 +47,7 @@ func (o *OpenAIWrapper) CreateChatCompletion(messages []openai.ChatCompletionMes
 	if o.Verbose {
 		log.Printf("Creating chat completion with parameters: Model=%s, MaxTokens=%d, Temperature=%f, ResponseFormat=%s", model, maxTokens, temperature, chatCompletionParams.ResponseFormat)
 		for i, msg := range messages {
-			// Only print the User messages, not the system messages
-			if msg.Role == openai.ChatMessageRoleUser {
-				log.Printf("Message %d: Role=%s, Content=%s", i, msg.Role, msg.Content)
-			}
+			log.Printf("Message %d: Role=%s, Content=%s", i, msg.Role, msg.Content)
 		}
 	}
 

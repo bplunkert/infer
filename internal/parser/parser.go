@@ -97,9 +97,33 @@ func AttachCodeToTags(file *File) error {
 	// Convert the content to a string
 	code := string(content)
 
-	// Attach the code to each tag in the file
+	// Split the code into lines
+	lines := strings.Split(code, "\n")
+
+	// Attach the code block between Infer: TAGNAME and EndInfer: TAGNAME to each tag
 	for i := range file.Tags {
-		file.Tags[i].Code = code
+		tag := &file.Tags[i]
+		startMarker := fmt.Sprintf("// Infer: %s", tag.Name)
+		endMarker := fmt.Sprintf("// EndInfer: %s", tag.Name)
+
+		startIndex := -1
+		endIndex := -1
+
+		for j, line := range lines {
+			if strings.TrimSpace(line) == startMarker {
+				startIndex = j + 1
+			} else if strings.TrimSpace(line) == endMarker {
+				endIndex = j
+				break
+			}
+		}
+
+		if startIndex != -1 && endIndex != -1 && endIndex > startIndex {
+			codeLines := lines[startIndex:endIndex]
+			tag.Code = strings.Join(codeLines, "\n")
+		} else {
+			return fmt.Errorf("failed to find code block for tag '%s'", tag.Name)
+		}
 	}
 
 	return nil

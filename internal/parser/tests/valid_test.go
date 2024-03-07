@@ -36,9 +36,8 @@ func TestParseInferfileValid(t *testing.T) {
 									},
 								},
 								Code: `func openaiClient() {
-// This is a stub function
+	// This is a stub function
 }
-
 `,
 							},
 						},

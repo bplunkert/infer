@@ -36,7 +36,7 @@ func (e *Executor) Execute(inference parser.Inference, code string) (bool, error
 		messages := []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleSystem,
-				Content: "Here is a code block tagged as [" + tag + "]. Please analyze the following code: \n\n" + code,
+				Content: "Here is a code block tagged as [" + tag + "]. Please analyze the following code: \n\n```" + code + "```",
 			},
 			{
 				Role:    openai.ChatMessageRoleSystem,

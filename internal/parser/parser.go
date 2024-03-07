@@ -22,18 +22,18 @@ type File struct {
 
 type Tag struct {
 	Name       string      `hcl:"name,label"`
-	Inferences []Inference `hcl:"inference,block"`
-	Code       string      `hcl:"code"`
+	Inferences []Inference `hcl:"infer,block"`
+	Code       string      `hcl:"code,optional"`
 }
 
 type Inference struct {
-	Assertion   string  `hcl:"assertion"`
+	Assertion   string  `hcl:"assert"`
 	Model       string  `hcl:"model"`
 	Count       int     `hcl:"count"`
 	Threshold   float64 `hcl:"threshold"`
-	MaxTokens   int     `hcl:"max_tokens"`
-	Temperature float64 `hcl:"temperature"`
-	Tag_Name    string  `hcl:"tag_name"`
+	MaxTokens   int     `hcl:"max_tokens,optional"`
+	Temperature float64 `hcl:"temperature,optional"`
+	Tag_Name    string  `hcl:"tag_name,optional"`
 }
 
 func ParseInferfile(path string) (*InferConfiguration, error) {
@@ -72,42 +72,34 @@ func ParseInferfile(path string) (*InferConfiguration, error) {
 		}
 	}
 
+	// Set the Tag_Name for each inference based on the parent tag's name
+	for i := range config.Files {
+		file := &config.Files[i]
+		for j := range file.Tags {
+			tag := &file.Tags[j]
+			for k := range tag.Inferences {
+				inference := &tag.Inferences[k]
+				inference.Tag_Name = tag.Name
+			}
+		}
+	}
+
 	return &config, nil
 }
 
 func AttachCodeToTags(file *File) error {
-	// Read the entire source file content
-	source, err := ioutil.ReadFile(file.Path)
+	// Read the file content
+	content, err := ioutil.ReadFile(file.Path)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to read file: %s", err.Error())
 	}
 
-	// Convert the file content into a slice of lines
-	lines := strings.Split(string(source), "\n")
+	// Convert the content to a string
+	code := string(content)
 
-	// Iterate over each tag in the file
+	// Attach the code to each tag in the file
 	for i := range file.Tags {
-		tag := &file.Tags[i] // Get a reference to the tag to modify it directly
-		var tagBuilder strings.Builder
-		var inTagBlock bool
-
-		// Iterate over each line in the source file
-		for _, line := range lines {
-			if strings.Contains(line, "Infer: "+tag.Name) {
-				inTagBlock = true // Start of tag block
-				continue
-			}
-			if strings.Contains(line, "EndInfer: "+tag.Name) {
-				inTagBlock = false // End of tag block
-				break
-			}
-			if inTagBlock {
-				tagBuilder.WriteString(line + "\n") // Collect the lines within the tag block
-			}
-		}
-
-		// Update the tag's Code field with the collected code block
-		tag.Code = tagBuilder.String()
+		file.Tags[i].Code = code
 	}
 
 	return nil

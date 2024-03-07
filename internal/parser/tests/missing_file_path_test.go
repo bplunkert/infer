@@ -17,9 +17,7 @@ func TestParseInferfileMissingFilePath(t *testing.T) {
 		{
 			name:          "missing_file_path",
 			inferfilePath: filepath.Join("../testdata", "missing_file_path.hcl"),
-			expectedError: `failed to parse Inferfile:
-- ../testdata/missing_file_path.hcl:2,45-45: Missing required argument; The argument "code" is required, but no definition was found.
-- ../testdata/missing_file_path.hcl:3,5-10: Unsupported block type; Blocks of type "infer" are not expected here.`,
+			expectedError: `file '/this/file/does/not/exist' specified in Inferfile does not exist`,
 		},
 	}
 

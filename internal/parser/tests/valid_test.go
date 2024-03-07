@@ -35,7 +35,11 @@ func TestParseInferfileValid(t *testing.T) {
 										Tag_Name:    "OpenAI client",
 									},
 								},
-								Code: "",
+								Code: `func openaiClient() {
+// This is a stub function
+}
+
+`,
 							},
 						},
 					},

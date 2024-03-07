@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
+      GOPATH: /home/runner/work/infer/go
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
     steps:

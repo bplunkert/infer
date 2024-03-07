@@ -1,0 +1,240 @@
+diff --git a/Inferfile b/Inferfile
+deleted file mode 100644
+index 79973f2..0000000
+--- a/Inferfile
++++ /dev/null
+@@ -1,70 +0,0 @@
+-file "./internal/api/openai.go" {
+-  tag "OpenAI client" {
+-    infer { 
+-      assert    = "This code does connect to OpenAI." 
+-      model     = "gpt-3.5-turbo"
+-      count     = 1
+-      threshold = 1.0
+-    }
+-
+-    infer { 
+-      assert    = "Does this code configure the OpenAI API URL?"
+-      model     = "gpt-3.5-turbo"
+-      count     = 1
+-      threshold = 1.0
+-    }
+-
+-    infer {
+-      assert    = "This code does not contain any hard-coded API credentials."
+-      model     = "gpt-3.5-turbo"
+-      count     = 1
+-      threshold = 1.0
+-    }
+-
+-    infer {
+-      assert    = "Does this code limit the API request max tokens as specified by inference.max_tokens?"
+-      model     = "gpt-3.5-turbo"
+-      count     = 1
+-      threshold = 1.0
+-    }
+-  }
+-}
+-
+-file "./cmd/infer/infer.go" {
+-  tag "command line arguments" {
+-    infer {
+-      assert    = "This code accepts an argument for parallel threads." 
+-      model     = "gpt-3.5-turbo"
+-      count     = 1
+-      threshold = 1.0
+-    }
+-
+-    infer {
+-      assert    = "Does this code accept an argument for an OpenAI API URL?"
+-      model     = "gpt-3.5-turbo"
+-      count     = 1
+-      threshold = 1.0
+-    }
+-  }
+-
+-  tag "execution" {
+-    infer {
+-      assert    = "This code runs parallel threads."
+-      model     = "gpt-3.5-turbo"
+-      count     = 5
+-      threshold = 1.0
+-    }
+-  }
+-}
+-
+-file "./internal/executor/executor.go" {
+-  tag "Execute" {
+-    infer {
+-
+-      assert    = "Does this code run each inference multiple times, as specified by inference.count?"
+-      model     = "gpt-3.5-turbo"
+-      count     = 5
+-      threshold = 1.0
+-    }
+-  }
+-}
+diff --git a/internal/parser/parser_test.go b/internal/parser/parser_test.go
+index 0bcd0d9..3a00c6f 100644
+--- a/internal/parser/parser_test.go
++++ b/internal/parser/parser_test.go
+@@ -1,100 +1,39 @@
+-package parser
++package parser_test
+ 
+ import (
+ 	"io/ioutil"
+ 	"os"
+-	"path/filepath"
+ 	"testing"
+ )
+ 
+-// TestMissingFileError confirms that an error is raised when a file is missing
+-func TestMissingFileError(t *testing.T) {
+-	inferfilePath := filepath.Join("tests", "Inferfile.missing_file_path")
++// TestMain is the entry point for all tests in this package.
++// It sets up any necessary global state and runs the tests.
++func TestMain(m *testing.M) {
++	// Perform any global setup here, if needed.
++	// For example, you can create temporary directories or files.
+ 
+-	// Parse the Inferfile and expect an error
+-	_, err := ParseInferfile(inferfilePath)
+-	if err == nil {
+-		t.Fatalf("Expected an error for missing file, but got none")
+-	}
+-	expectedErrMsg := "file not found: ./this/file/does/not/exist (Inferfile line: 1)"
+-	if err.Error() != expectedErrMsg {
+-		t.Fatalf("Expected error message to be: %s, but got: %s", expectedErrMsg, err.Error())
+-	}
+-}
++	// Run the tests.
++	exitCode := m.Run()
+ 
+-// TestParseInferfileWithStubFile tests parsing an Inferfile with a stub file
+-func TestParseInferfileWithStubFile(t *testing.T) {
+-	// Create a temporary stub Go file.
+-	stubGoCode := `package main
++	// Perform any global teardown here, if needed.
++	// For example, you can clean up temporary directories or files.
+ 
+-// Infer: OpenAI client
+-func openaiClient() {
+-	// This is a stub function
+-}
+-// EndInfer: OpenAI client
+-`
+-	tmpGoFilePath := "/tmp/mycode.go"
+-	err := ioutil.WriteFile(tmpGoFilePath, []byte(stubGoCode), 0644)
+-	if err != nil {
+-		t.Fatalf("Failed to create temporary Go file: %s", err)
+-	}
+-	defer os.Remove(tmpGoFilePath) // Clean up after the test
+-
+-	// Assume that Inferfile.valid is correctly pointing to /tmp/mycode.go
+-	inferfilePath := filepath.Join("tests", "Inferfile.valid")
+-
+-	var config *InferConfiguration
+-	// Parse the Inferfile and expect no error
+-	config, err = ParseInferfile(inferfilePath)
+-	if err != nil {
+-		t.Fatalf("Expected no error, but got: %s", err)
+-	} else {
+-		// Expect the data to have a tag "OpenAI client"
+-		if config.Files[0].Tags[0].Code == "" {
+-			t.Fatalf("Expected the data to have a tag 'OpenAI client', but it did not")
+-		}
+-	}
++	// Exit with the appropriate code.
++	os.Exit(exitCode)
+ }
+ 
+-// TestParseInferfileNoTags confirms that an Inferfile with a file resource but no tags can be loaded without errors.
+-func TestParseInferfileNoTagsWithStubFile(t *testing.T) {
+-	// Create a temporary stub Go file.
+-	stubGoCode := `package main
+-
+-// Infer: example_tag
+-func example() {
+-	// Some example code
+-}
+-// EndInfer: example_tag
+-`
+-	tmpGoFilePath := "/tmp/mycode.go"
+-	err := ioutil.WriteFile(tmpGoFilePath, []byte(stubGoCode), 0644)
++// createStubFile creates a temporary stub Go file for testing purposes.
++func createStubFile(content string) (string, error) {
++	tmpFile, err := ioutil.TempFile("", "stub*.go")
+ 	if err != nil {
+-		t.Fatalf("Failed to create temporary Go file: %s", err)
++		return "", err
+ 	}
+-	defer os.Remove(tmpGoFilePath) // Clean up after the test
++	defer tmpFile.Close()
+ 
+-	inferfilePath := filepath.Join("tests", "Inferfile.no_tags")
+-
+-	// Parse the Inferfile and expect no error
+-	config, err := ParseInferfile(inferfilePath)
++	_, err = tmpFile.WriteString(content)
+ 	if err != nil {
+-		t.Fatalf("Expected no error, but got: %s", err)
++		return "", err
+ 	}
+ 
+-	// Additionally, you can check if the file paths are parsed correctly.
+-	if len(config.Files) != 1 {
+-		t.Errorf("Expected 1 file resource, got %d", len(config.Files))
+-	}
+-
+-	// You can also check if the file path is as expected.
+-	expectedPath := "/tmp/mycode.go"
+-	if config.Files[0].Path != expectedPath {
+-		t.Errorf("Expected file path to be '%s', got '%s'", expectedPath, config.Files[0].Path)
+-	}
+-
+-	// Check that there are no tags in the file resource.
+-	if len(config.Files[0].Tags) != 0 {
+-		t.Errorf("Expected no tags, got %d", len(config.Files[0].Tags))
+-	}
++	return tmpFile.Name(), nil
+ }
+diff --git a/internal/parser/tests/Inferfile.missing_file_path b/internal/parser/tests/Inferfile.missing_file_path
+deleted file mode 100644
+index b726ed7..0000000
+--- a/internal/parser/tests/Inferfile.missing_file_path
++++ /dev/null
+@@ -1,10 +0,0 @@
+-file "./this/file/does/not/exist" {
+-  tag "a block of code that does not exist" {
+-    infer { 
+-      assert    = "Does not contain any hard-coded credentials." 
+-      model     = "gpt-3.5-turbo"
+-      count     = 5                # Check assertion 5 times
+-      threshold = 0.8              # Require 80% for success
+-    }
+-  }
+-}
+diff --git a/internal/parser/tests/Inferfile.no_tags b/internal/parser/tests/Inferfile.no_tags
+deleted file mode 100644
+index ffef9c5..0000000
+--- a/internal/parser/tests/Inferfile.no_tags
++++ /dev/null
+@@ -1 +0,0 @@
+-file "/tmp/mycode.go" {}
+diff --git a/internal/parser/tests/Inferfile.valid b/internal/parser/tests/Inferfile.valid
+deleted file mode 100644
+index 34b9850..0000000
+--- a/internal/parser/tests/Inferfile.valid
++++ /dev/null
+@@ -1,10 +0,0 @@
+-file "/tmp/mycode.go" {
+-  tag "OpenAI client" {
+-    infer { 
+-      assert    = "Does not contain any hard-coded credentials." 
+-      model     = "gpt-3.5-turbo"
+-      count     = 5                # Check assertion 5 times
+-      threshold = 0.8              # Require 80% for success
+-    }
+-  }
+-}

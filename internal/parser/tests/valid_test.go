@@ -16,11 +16,11 @@ func TestParseInferfileValid(t *testing.T) {
 	}{
 		{
 			name:          "valid",
-			inferfilePath: filepath.Join("testdata", "valid.hcl"),
+			inferfilePath: filepath.Join("../testdata", "valid.hcl"),
 			expectedConfig: &parser.InferConfiguration{
 				Files: []parser.File{
 					{
-						Path: "/tmp/mycode.go",
+						Path: filepath.Join("../testdata", "valid.go"),
 						Tags: []parser.Tag{
 							{
 								Name: "OpenAI client",

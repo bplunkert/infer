@@ -16,7 +16,7 @@ func TestParseInferfileNoTags(t *testing.T) {
 	}{
 		{
 			name:          "no_tags",
-			inferfilePath: filepath.Join("testdata", "no_tags.hcl"),
+			inferfilePath: filepath.Join("../testdata", "no_tags.hcl"),
 			expectedConfig: &parser.InferConfiguration{
 				Files: []parser.File{
 					{

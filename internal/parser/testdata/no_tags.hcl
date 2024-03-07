@@ -1,1 +1,1 @@
-file "/tmp/mycode.go" {}
+file "./no_tags.go" {}

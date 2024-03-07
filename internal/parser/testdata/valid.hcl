@@ -1,4 +1,4 @@
-file "/tmp/mycode.go" {
+file "./valid.go" {
   tag "OpenAI client" {
     infer { 
       assert    = "Does not contain any hard-coded credentials." 

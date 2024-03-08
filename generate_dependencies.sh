@@ -26,11 +26,15 @@ echo "" >> $DEP_FILE
         # Correcting version naming and paths for special cases
         if [ "$version" == "blob" ] || [ "$version" == "HEAD" ]; then
             version="HEAD"
+            repo_url="https://github.com/$org/$repo"  # Default assumption; might need adjustment for non-GitHub URLs
+        else
+            repo_url="https://github.com/$org/$repo/tree/$version"
         fi
 
         if [[ $package == golang.org/x/* ]]; then
             org="golang"
             repo=$(echo $package | cut -d '/' -f 4)
+            repo_url="https://go.googlesource.com/$repo"
         fi
 
         filename="${org}_${repo}_${version}_LICENSE"
@@ -42,6 +46,7 @@ echo "" >> $DEP_FILE
         # Write to DEPENDENCIES.md
         echo "## $package" >> $DEP_FILE
         echo "" >> $DEP_FILE
+        echo "- **Repository:** [$repo_url]($repo_url)" >> $DEP_FILE
         echo "- **License:** $license" >> $DEP_FILE
         echo "- **Version:** $version" >> $DEP_FILE
         echo "- **License Text:** [Link to License]($filepath)" >> $DEP_FILE

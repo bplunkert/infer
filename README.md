@@ -126,3 +126,41 @@ Infer is provided under the GNU General Public License (Version 3) by Inferret.i
 ## Support
 
 For support, bug reports, or feature requests, please file an issue through the GitHub issue tracker.
+
+# Dependency Licenses
+
+This project uses the following third-party dependencies:
+
+1. **hashicorp/hcl**  
+   License: Mozilla Public License 2.0  
+   The full license text is available in [hashicorp_hcl_LICENSE](./dependencies/hashicorp_hcl_LICENSE).
+
+2. **sashabaranov/go-openai**  
+   License: Apache License 2.0  
+   The full license text is available in [sashabaranov_go_openai_LICENSE](./dependencies/sashabaranov_go_openai_LICENSE).
+
+3. **agext/levenshtein**  
+   License: Apache License 2.0  
+   The full license text is available in [agext_levenshtein_LICENSE](./dependencies/agext_levenshtein_LICENSE).
+
+4. **apparentlymart/go-textseg**  
+   License: Other
+   The full license text is available in [apparentlymart_go_textseg_LICENSE](./dependencies/apparentlymart_go_textseg_LICENSE).
+
+5. **google/go-cmp**  
+   License: BSD 3-Clause "New" or "Revised" License  
+   The full license text is available in [google_go_cmp_LICENSE](./dependencies/google_go_cmp_LICENSE).
+
+6. **mitchellh/go-wordwrap**  
+   License: MIT License  
+   The full license text is available in [mitchellh_go_wordwrap_LICENSE](./dependencies/mitchellh_go_wordwrap_LICENSE).
+
+7. **zclconf/go-cty**  
+   License: MIT License  
+   The full license text is available in [zclconf_go_cty_LICENSE](./dependencies/zclconf_go_cty_LICENSE).
+
+8. **golang.org/x/text** (if applicable, since it's not hosted on GitHub and might need a different approach for the license)  
+   License: BSD 3-Clause "New" or "Revised" License  
+   (Specify where the license can be found or how it's handled in your project.)
+
+Please refer to the respective license files in the `dependencies` directory for full license texts.

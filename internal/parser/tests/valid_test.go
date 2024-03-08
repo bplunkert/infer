@@ -23,8 +23,36 @@ func TestParseInferfileValid(t *testing.T) {
 						Path: filepath.Join("../testdata", "valid.go"),
 						Tags: []parser.Tag{
 							{
+								Name: "OpenAI client",
+								Code: `func openaiClient() {
+  print("This is just an example function")
+}`,
+								Inferences: []parser.Inference{
+									{
+										Assertion:   "Does not contain any hard-coded credentials.",
+										Model:       "gpt-3.5-turbo",
+										Count:       1,
+										Threshold:   1,
+										MaxTokens:   0,
+										Temperature: 0,
+										Tag_Name:    "OpenAI client",
+									},
+								},
+							},
+							{
 								Name: "tagged code",
 								Code: `print("all code between infer tags is included")`,
+								Inferences: []parser.Inference{
+									{
+										Assertion:   "It prints some output.",
+										Model:       "gpt-3.5-turbo",
+										Count:       1,
+										Threshold:   1,
+										MaxTokens:   0,
+										Temperature: 0,
+										Tag_Name:    "tagged code",
+									},
+								},
 							},
 						},
 					},

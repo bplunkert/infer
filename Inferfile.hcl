@@ -68,3 +68,14 @@ file "./internal/executor/executor.go" {
     }
   }
 }
+
+file "./internal/parser/parser.go" {
+  tag "AttachCodeToTags" {
+    infer {
+      assert    = "Does this function exclude *everything* outside Infer/EndInfer tags?"
+      model     = "gpt-3.5-turbo"
+      count     = 5
+      threshold = 1.0
+    }
+  }
+}

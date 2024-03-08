@@ -87,6 +87,7 @@ func ParseInferfile(path string) (*InferConfiguration, error) {
 	return &config, nil
 }
 
+// Infer: AttachCodeToTags
 func AttachCodeToTags(file *File) error {
 	// Read the file content
 	content, err := ioutil.ReadFile(file.Path)
@@ -128,3 +129,5 @@ func AttachCodeToTags(file *File) error {
 
 	return nil
 }
+
+// EndInfer: AttachCodeToTags

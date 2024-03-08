@@ -11,33 +11,25 @@ echo "" >> $DEP_FILE
 echo "This software includes and uses the following third-party libraries:" >> $DEP_FILE
 echo "" >> $DEP_FILE
 
+# Function to create a filename-safe version of the package name
+sanitize_package_name() {
+    echo "$1" | sed 's|/|_|g' | sed 's|:|_|g'
+}
+
 # Run go-licenses and process the output
 /home/ben/go/bin/go-licenses report ./... | while IFS=, read -r package url license; do
     # Skip the main module to avoid treating it as its own dependency
-    if [[ $line == *"module github.com/inferret/infer"* ]]; then
+    if [[ "$package" == "github.com/inferret/infer" ]]; then
         continue
     fi
 
     if [[ $url == http* ]]; then
-        org=$(echo $package | cut -d '/' -f 2)
-        repo=$(echo $package | cut -d '/' -f 3)
-        version=$(echo $url | rev | cut -d '/' -f 2 | rev)
+        # Sanitize the package name to be used in the filename
+        safe_package_name=$(sanitize_package_name "$package")
 
-        # Correcting version naming and paths for special cases
-        if [ "$version" == "blob" ] || [ "$version" == "HEAD" ]; then
-            version="HEAD"
-            repo_url="https://github.com/$org/$repo"  # Default assumption; might need adjustment for non-GitHub URLs
-        else
-            repo_url="https://github.com/$org/$repo/tree/$version"
-        fi
+        # Use the full, sanitized package name for the filename
+        filename="${safe_package_name}_LICENSE"
 
-        if [[ $package == golang.org/x/* ]]; then
-            org="golang"
-            repo=$(echo $package | cut -d '/' -f 4)
-            repo_url="https://go.googlesource.com/$repo"
-        fi
-
-        filename="${org}_${repo}_${version}_LICENSE"
         filepath="$LICENSE_DIR/$filename"
 
         # Download the license file
@@ -46,10 +38,9 @@ echo "" >> $DEP_FILE
         # Write to DEPENDENCIES.md
         echo "## $package" >> $DEP_FILE
         echo "" >> $DEP_FILE
-        echo "- **Repository:** [$repo_url]($repo_url)" >> $DEP_FILE
+        echo "- **Repository:** [Link to License]($url)" >> $DEP_FILE
         echo "- **License:** $license" >> $DEP_FILE
-        echo "- **Version:** $version" >> $DEP_FILE
-        echo "- **License Text:** [Link to License]($filepath)" >> $DEP_FILE
+        echo "- **License Text:** [Copy of License Text]($filepath)" >> $DEP_FILE
         echo "" >> $DEP_FILE
     fi
 done
